@@ -121,6 +121,10 @@ typedef struct tskTaskControlBlock
 		unsigned long ulRunTimeCounter;		/*< Used for calculating how much CPU time each task is utilising. */
 	#endif
 
+	#if ( configTASK_REENT_SUPPORT == 1 )
+		void *pxReentData;
+	#endif
+
 } tskTCB;
 
 
@@ -1725,6 +1729,13 @@ void vTaskSwitchContext( void )
 		same priority get an equal share of the processor time. */
 		listGET_OWNER_OF_NEXT_ENTRY( pxCurrentTCB, &( pxReadyTasksLists[ uxTopReadyPriority ] ) );
 	
+		#if ( configTASK_REENT_SUPPORT == 1 )
+		{
+			extern void vPortTaskSwitchHook( void** );
+			vPortTaskSwitchHook( &(pxCurrentTCB->pxReentData) );
+		}
+		#endif
+
 		traceTASK_SWITCHED_IN();
 		vWriteTraceToBuffer();
 	}
@@ -2206,6 +2217,22 @@ tskTCB *pxNewTCB;
 		}
 	}
 
+	#if ( configTASK_REENT_SUPPORT == 1 )
+	{
+		if( pxNewTCB != NULL )
+		{
+			extern portBASE_TYPE uxPortTaskAllocateHook( void** );
+			if ( uxPortTaskAllocateHook( &(pxNewTCB->pxReentData) ) != pdPASS )
+			{
+				/* Deallocate tcb and stack */
+				vPortFree( pxNewTCB );
+				vPortFreeAligned(pxNewTCB->pxStack);
+				pxNewTCB = NULL;
+			}
+		}
+	}
+	#endif
+
 	return pxNewTCB;
 }
 /*-----------------------------------------------------------*/
@@ -2364,6 +2391,13 @@ tskTCB *pxNewTCB;
 
 	static void prvDeleteTCB( tskTCB *pxTCB )
 	{
+		#if ( configTASK_REENT_SUPPORT == 1 )
+		{
+			extern void vPortTaskDeallocateHook( void** );
+			vPortTaskDeallocateHook( &(pxTCB->pxReentData) );
+		}
+		#endif
+
 		/* Free up the memory allocated by the scheduler for the task.  It is up to
 		the task to free any memory allocated at the application level. */
 		vPortFreeAligned( pxTCB->pxStack );
