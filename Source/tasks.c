@@ -125,6 +125,10 @@ typedef struct tskTaskControlBlock
 		void *pxReentData;
 	#endif
 
+	#if ( configTASK_TLS_SUPPORT == 1 )
+		xList xTlsList;
+	#endif
+
 } tskTCB;
 
 
@@ -2074,6 +2078,12 @@ static void prvInitialiseTCBVariables( tskTCB *pxTCB, const signed char * const 
 		( void ) usStackDepth;
 	}
 	#endif
+	
+	#if ( configTASK_TLS_SUPPORT == 1 )
+	{
+		vListInitialise( &( pxTCB->xTlsList ) );
+	}
+	#endif
 }
 /*-----------------------------------------------------------*/
 
@@ -2551,6 +2561,13 @@ void vTaskExitCritical( void )
 #endif
 /*-----------------------------------------------------------*/
 
+#if ( configTASK_TLS_SUPPORT == 1 )
 
-
+	xList *xTaskGetTlsList()
+	{
+		return &( pxCurrentTCB->xTlsList );
+	}
+	
+#endif
+/*-----------------------------------------------------------*/
 

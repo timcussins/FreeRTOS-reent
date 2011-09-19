@@ -684,6 +684,7 @@ void vTaskPrioritySet( xTaskHandle pxTask, unsigned portBASE_TYPE uxNewPriority 
  * \defgroup vTaskSuspend vTaskSuspend
  * \ingroup TaskCtrl
  */
+
 void vTaskSuspend( xTaskHandle pxTaskToSuspend ) PRIVILEGED_FUNCTION;
 
 /**
@@ -1144,6 +1145,24 @@ constant. */
 		pdTASK_HOOK_CODE xTaskGetApplicationTaskTag( xTaskHandle xTask ) PRIVILEGED_FUNCTION;
 	#endif /* configUSE_APPLICATION_TASK_TAG ==1 */
 #endif /* ifdef configUSE_APPLICATION_TASK_TAG */
+
+
+
+
+#ifdef configTASK_TLS_SUPPORT
+	#if configTASK_TLS_SUPPORT == 1
+		/**
+		 * task.h
+		 * <pre>xList *xTaskGetTlsList( void );</pre>
+		 *
+		 * Retrieve the xList contained in the TCB. GCC requires support from 
+		 * an OS to provide thread-safety. This list can be used to implement
+		 * __gthread_key_XXX (& friends) per-thread API.
+		 */
+
+		xList *xTaskGetTlsList( void );
+	#endif
+#endif
 
 /**
  * task.h
