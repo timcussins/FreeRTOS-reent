@@ -1732,7 +1732,7 @@ void vTaskSwitchContext( void )
 		#if ( configTASK_REENT_SUPPORT == 1 )
 		{
 			extern void vPortTaskSwitchHook( void** );
-			vPortTaskSwitchHook( &(pxCurrentTCB->pxReentData) );
+			vPortTaskSwitchHook( pxCurrentTCB->pxReentData );
 		}
 		#endif
 
@@ -2225,8 +2225,8 @@ tskTCB *pxNewTCB;
 			if ( uxPortTaskAllocateHook( &(pxNewTCB->pxReentData) ) != pdPASS )
 			{
 				/* Deallocate tcb and stack */
-				vPortFree( pxNewTCB );
 				vPortFreeAligned(pxNewTCB->pxStack);
+				vPortFree( pxNewTCB );
 				pxNewTCB = NULL;
 			}
 		}
@@ -2394,7 +2394,7 @@ tskTCB *pxNewTCB;
 		#if ( configTASK_REENT_SUPPORT == 1 )
 		{
 			extern void vPortTaskDeallocateHook( void** );
-			vPortTaskDeallocateHook( &(pxTCB->pxReentData) );
+			vPortTaskDeallocateHook( pxTCB->pxReentData );
 		}
 		#endif
 
